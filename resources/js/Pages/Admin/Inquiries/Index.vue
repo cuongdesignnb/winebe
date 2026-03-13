@@ -1,7 +1,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
-import { MessageSquare, Phone, Mail, Trash2 } from 'lucide-react';
+import { MessageSquare, Phone, Mail, Trash2 } from 'lucide-vue-next';
 
 const props = defineProps({
     inquiries: Object

@@ -1,7 +1,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
-import { ShoppingBag, Eye, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { ShoppingBag, Eye, Clock, CheckCircle, XCircle } from 'lucide-vue-next';
 
 const props = defineProps({
     orders: Object
