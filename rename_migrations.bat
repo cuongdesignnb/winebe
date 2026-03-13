@@ -1,0 +1,7 @@
+@echo off
+cd database\migrations
+ren 2026_03_08_061931_z_create_media_assets_table.php 2026_03_08_061931_create_media_assets_table.php
+ren 2026_03_08_061931_create_media_variants_table.php 2026_03_08_061931_z_create_media_variants_table.php
+ren 2026_03_08_061932_create_media_links_table.php 2026_03_08_061932_zz_create_media_links_table.php
+cd ..\..
+php artisan migrate:fresh

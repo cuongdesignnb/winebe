@@ -1,0 +1,72 @@
+name: wine-backend
+services:
+    mysql:
+        image: 'mysql/mysql-server:8.0'
+        container_name: wine_mysql
+        ports:
+            - '${FORWARD_DB_PORT:-3317}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD:-}'
+            MYSQL_ROOT_HOST: '%'
+            MYSQL_DATABASE: '${DB_DATABASE:-wine_db}'
+            MYSQL_USER: '${DB_USERNAME:-root}'
+            MYSQL_PASSWORD: '${DB_PASSWORD:-}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            - 'wine-mysql:/var/lib/mysql'
+        networks:
+            - wine_network
+        healthcheck:
+            test:
+                - CMD
+                - mysqladmin
+                - ping
+                - '-p${DB_PASSWORD}'
+            retries: 3
+            timeout: 5s
+    redis:
+        image: 'redis:alpine'
+        container_name: wine_redis
+        ports:
+            - '${FORWARD_REDIS_PORT:-6387}:6379'
+        volumes:
+            - 'wine-redis:/data'
+        networks:
+            - wine_network
+        healthcheck:
+            test:
+                - CMD
+                - redis-cli
+                - ping
+            retries: 3
+            timeout: 5s
+    meilisearch:
+        image: 'getmeili/meilisearch:latest'
+        container_name: wine_meilisearch
+        ports:
+            - '${FORWARD_MEILISEARCH_PORT:-7717}:7700'
+        environment:
+            MEILI_NO_ANALYTICS: 'true'
+        volumes:
+            - 'wine-meilisearch:/meili_data'
+        networks:
+            - wine_network
+        healthcheck:
+            test:
+                - CMD
+                - wget
+                - '--no-verbose'
+                - '--spider'
+                - 'http://127.0.0.1:7700/health'
+            retries: 3
+            timeout: 5s
+networks:
+    wine_network:
+        driver: bridge
+volumes:
+    wine-mysql:
+        driver: local
+    wine-redis:
+        driver: local
+    wine-meilisearch:
+        driver: local
