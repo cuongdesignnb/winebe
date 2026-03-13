@@ -21,7 +21,12 @@ class MenuController extends Controller
                         ->orderBy('sort_order')
                         ->with([
                             'children' => function ($q) {
-                                $q->where('is_visible', true)->orderBy('sort_order');
+                                $q->where('is_visible', true)->orderBy('sort_order')
+                                    ->with([
+                                        'children' => function ($q) {
+                                            $q->where('is_visible', true)->orderBy('sort_order');
+                                        }
+                                    ]);
                             }
                         ]);
                 }

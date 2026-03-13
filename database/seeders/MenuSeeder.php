@@ -22,32 +22,61 @@ class MenuSeeder extends Seeder
                 'title' => 'WHISKIES',
                 'url' => '/san-pham?category=whisky',
                 'children' => [
-                    ['title' => 'Single Malt', 'url' => '/san-pham?category=single-malt'],
-                    ['title' => 'Blended', 'url' => '/san-pham?category=blended'],
-                    ['title' => 'Scotch Whisky', 'url' => '/san-pham?category=scotch-whisky'],
+                    [
+                        'title' => 'Single Malt', 
+                        'url' => '/san-pham?category=single-malt',
+                        'children' => [
+                            ['title' => 'Macallan', 'url' => '/san-pham?search=Macallan'],
+                            ['title' => 'Glenfiddich', 'url' => '/san-pham?search=Glenfiddich'],
+                            ['title' => 'The Balvenie', 'url' => '/san-pham?search=Balvenie'],
+                        ]
+                    ],
+                    [
+                        'title' => 'Blended Scotch', 
+                        'url' => '/san-pham?category=blended',
+                        'children' => [
+                            ['title' => 'Johnnie Walker', 'url' => '/san-pham?search=Walker'],
+                            ['title' => 'Chivas Regal', 'url' => '/san-pham?search=Chivas'],
+                        ]
+                    ],
+                    ['title' => 'Japanese Whisky', 'url' => '/san-pham?category=japanese-whisky'],
                 ]
             ],
             [
-                'title' => 'COGNAC',
+                'title' => 'COGNAC / RUM',
                 'url' => '/san-pham?category=cognac',
                 'children' => [
-                    ['title' => 'VS', 'url' => '/san-pham?category=vs'],
-                    ['title' => 'VSOP', 'url' => '/san-pham?category=vsop'],
-                    ['title' => 'XO', 'url' => '/san-pham?category=xo'],
+                    [
+                        'title' => 'Cognac', 
+                        'url' => '/san-pham?category=cognac',
+                        'children' => [
+                            ['title' => 'Hennessy', 'url' => '/san-pham?search=Hennessy'],
+                            ['title' => 'Martell', 'url' => '/san-pham?search=Martell'],
+                        ]
+                    ],
+                    [
+                        'title' => 'Premium Rum', 
+                        'url' => '/san-pham?category=rum',
+                        'children' => [
+                            ['title' => 'Zacapa', 'url' => '/san-pham?search=Zacapa'],
+                            ['title' => 'Diplomatico', 'url' => '/san-pham?search=Diplomatico'],
+                        ]
+                    ],
                 ]
             ],
             [
-                'title' => 'WINE',
+                'title' => 'WINE & GIN',
                 'url' => '/san-pham?category=wine',
                 'children' => [
-                    ['title' => 'Red Wine', 'url' => '/san-pham?category=red-wine'],
-                    ['title' => 'White Wine', 'url' => '/san-pham?category=white-wine'],
+                    ['title' => 'Vang Đỏ (Red Wine)', 'url' => '/san-pham?category=red-wine'],
+                    ['title' => 'Vang Trắng (White Wine)', 'url' => '/san-pham?category=white-wine'],
+                    ['title' => 'London Dry Gin', 'url' => '/san-pham?category=gin'],
                 ]
             ],
         ];
 
         foreach ($items as $i => $itemData) {
-            $item = MenuItem::create([
+            $parent = MenuItem::create([
                 'menu_id' => $header->id,
                 'title' => $itemData['title'],
                 'url' => $itemData['url'],
@@ -58,15 +87,29 @@ class MenuSeeder extends Seeder
 
             if (isset($itemData['children'])) {
                 foreach ($itemData['children'] as $j => $childData) {
-                    MenuItem::create([
+                    $child = MenuItem::create([
                         'menu_id' => $header->id,
-                        'parent_id' => $item->id,
+                        'parent_id' => $parent->id,
                         'title' => $childData['title'],
                         'url' => $childData['url'],
                         'item_type' => 'custom_link',
                         'sort_order' => $j,
                         'is_visible' => true,
                     ]);
+
+                    if (isset($childData['children'])) {
+                        foreach ($childData['children'] as $k => $subChildData) {
+                            MenuItem::create([
+                                'menu_id' => $header->id,
+                                'parent_id' => $child->id,
+                                'title' => $subChildData['title'],
+                                'url' => $subChildData['url'],
+                                'item_type' => 'custom_link',
+                                'sort_order' => $k,
+                                'is_visible' => true,
+                            ]);
+                        }
+                    }
                 }
             }
         }
