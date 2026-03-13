@@ -267,27 +267,63 @@ const itemTypeLabels = {
                                         </div>
                                     </div>
 
-                                    <!-- Children Level 3 (Links in mega menu) -->
+                                    <!-- Children Level 3 (Column headings in mega menu) -->
                                     <div v-if="child.children_list && child.children_list.length > 0 && expandedItems[child.id]" class="pl-12 bg-gray-50/30">
-                                        <div v-for="grandchild in child.children_list" :key="grandchild.id" class="flex items-center gap-3 px-4 py-2 border-b border-gray-50 last:border-none hover:bg-amber-50/50 transition-colors">
-                                            <GripVertical class="w-3.5 h-3.5 text-gray-200 cursor-grab flex-shrink-0" />
-                                            <div class="w-4 h-4 border-l-2 border-b-2 border-amber-200 rounded-bl-md flex-shrink-0 -mt-3"></div>
-                                            <div class="flex-1 min-w-0">
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">CẤP 3</span>
-                                                    <span class="font-medium text-[13px] text-gray-700">{{ grandchild.title }}</span>
+                                        <div v-for="grandchild in child.children_list" :key="grandchild.id" class="border-b border-gray-50 last:border-none hover:bg-amber-50/50 transition-colors">
+                                            <div class="flex items-center gap-3 px-4 py-2">
+                                                <GripVertical class="w-3.5 h-3.5 text-gray-200 cursor-grab flex-shrink-0" />
+                                                <div class="w-4 h-4 border-l-2 border-b-2 border-amber-200 rounded-bl-md flex-shrink-0 -mt-3"></div>
+                                                
+                                                <button v-if="grandchild.children_list && grandchild.children_list.length > 0" @click="toggleExpand(grandchild.id)" class="text-gray-400 hover:text-gray-700">
+                                                    <ChevronDown v-if="expandedItems[grandchild.id]" class="w-3 h-3" />
+                                                    <ChevronRight v-else class="w-3 h-3" />
+                                                </button>
+                                                <div v-else class="w-3"></div>
+
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">CẤP 3</span>
+                                                        <span class="font-medium text-[13px] text-gray-700">{{ grandchild.title }}</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-[9px] font-mono text-gray-400">{{ grandchild.url }}</span>
+                                                        <span v-if="grandchild.children_list && grandchild.children_list.length > 0" class="text-[9px] text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded font-semibold">{{ grandchild.children_list.length }} links</span>
+                                                    </div>
                                                 </div>
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-[9px] font-mono text-gray-400">{{ grandchild.url }}</span>
+                                                <div class="flex items-center gap-1 flex-shrink-0">
+                                                    <button @click="openAddModal(grandchild.id)" class="p-1 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" title="Thêm mục cấp 4">
+                                                        <Plus class="w-3 h-3" />
+                                                    </button>
+                                                    <button @click="openEditModal(grandchild)" class="p-1 text-gray-400 hover:text-amber-600 transition-colors">
+                                                        <Pencil class="w-3 h-3" />
+                                                    </button>
+                                                    <button @click="deleteItem(grandchild)" class="p-1 text-gray-400 hover:text-red-600 transition-colors">
+                                                        <Trash2 class="w-3 h-3" />
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div class="flex items-center gap-1 flex-shrink-0">
-                                                <button @click="openEditModal(grandchild)" class="p-1 text-gray-400 hover:text-amber-600 transition-colors">
-                                                    <Pencil class="w-3 h-3" />
-                                                </button>
-                                                <button @click="deleteItem(grandchild)" class="p-1 text-gray-400 hover:text-red-600 transition-colors">
-                                                    <Trash2 class="w-3 h-3" />
-                                                </button>
+
+                                            <!-- Children Level 4 (Links in mega menu) -->
+                                            <div v-if="grandchild.children_list && grandchild.children_list.length > 0 && expandedItems[grandchild.id]" class="pl-10 bg-purple-50/20">
+                                                <div v-for="leaf in grandchild.children_list" :key="leaf.id" class="flex items-center gap-3 px-4 py-1.5 border-b border-gray-50 last:border-none hover:bg-purple-50/50 transition-colors">
+                                                    <GripVertical class="w-3 h-3 text-gray-200 cursor-grab flex-shrink-0" />
+                                                    <div class="w-3 h-3 border-l-2 border-b-2 border-purple-200 rounded-bl-md flex-shrink-0 -mt-2"></div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="text-[8px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">CẤP 4</span>
+                                                            <span class="text-[12px] text-gray-600">{{ leaf.title }}</span>
+                                                        </div>
+                                                        <span class="text-[8px] font-mono text-gray-400">{{ leaf.url }}</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1 flex-shrink-0">
+                                                        <button @click="openEditModal(leaf)" class="p-1 text-gray-400 hover:text-amber-600 transition-colors">
+                                                            <Pencil class="w-2.5 h-2.5" />
+                                                        </button>
+                                                        <button @click="deleteItem(leaf)" class="p-1 text-gray-400 hover:text-red-600 transition-colors">
+                                                            <Trash2 class="w-2.5 h-2.5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
