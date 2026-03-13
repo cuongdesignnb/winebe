@@ -28,7 +28,22 @@ const submit = () => {
 const items = ref(props.menuItems || []);
 const showAddItemModal = ref(false);
 const showEditItemModal = ref(false);
-const expandedItems = ref({});
+const expandedItems = ref(initExpandedItems());
+
+// Auto-expand all items that have children
+function initExpandedItems() {
+    const expanded = {};
+    function expandRecursive(list) {
+        for (const item of list) {
+            if (item.children_list && item.children_list.length > 0) {
+                expanded[item.id] = true;
+                expandRecursive(item.children_list);
+            }
+        }
+    }
+    expandRecursive(props.menuItems || []);
+    return expanded;
+}
 
 const newItem = ref({
     title: '',
@@ -176,7 +191,7 @@ const itemTypeLabels = {
                 <div v-else class="space-y-1">
                     <template v-for="item in items" :key="item.id">
                         <div class="border border-gray-100 rounded-lg overflow-hidden transition-all hover:border-amber-200">
-                            <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-amber-50/50 transition-colors">
+                            <div class="flex items-center gap-3 px-4 py-3 bg-amber-50/60 hover:bg-amber-50 transition-colors">
                                 <GripVertical class="w-4 h-4 text-gray-300 cursor-grab flex-shrink-0" />
                                 
                                 <button v-if="item.children_list && item.children_list.length > 0" @click="toggleExpand(item.id)" class="text-gray-400 hover:text-gray-700">
@@ -186,11 +201,15 @@ const itemTypeLabels = {
                                 <div v-else class="w-4"></div>
 
                                 <div class="flex-1 min-w-0">
-                                    <span class="font-bold text-sm text-gray-900">{{ item.title }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[9px] font-bold text-amber-700 bg-amber-200 px-1.5 py-0.5 rounded">CẤP 1</span>
+                                        <span class="font-bold text-sm text-gray-900">{{ item.title }}</span>
+                                    </div>
                                     <div class="flex items-center gap-2 mt-0.5">
                                         <span class="text-[10px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{{ itemTypeLabels[item.item_type] || item.item_type }}</span>
                                         <span v-if="item.url" class="text-[10px] text-gray-400 truncate max-w-[200px]">{{ item.url }}</span>
                                         <span v-if="item.badge_text" class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">{{ item.badge_text }}</span>
+                                        <span v-if="item.children_list && item.children_list.length > 0" class="text-[9px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-semibold">{{ item.children_list.length }} mục con → Mega Menu</span>
                                     </div>
                                 </div>
 
@@ -198,7 +217,7 @@ const itemTypeLabels = {
                                     <span v-if="!item.is_visible" class="text-gray-300"><EyeOff class="w-4 h-4" /></span>
                                     <span v-if="item.open_in_new_tab" class="text-gray-300"><ExternalLink class="w-3.5 h-3.5" /></span>
 
-                                    <button @click="openAddModal(item.id)" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" title="Add child">
+                                    <button @click="openAddModal(item.id)" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" title="Thêm mục cấp 2">
                                         <Plus class="w-4 h-4" />
                                     </button>
                                     <button @click="openEditModal(item)" class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors">
@@ -210,25 +229,67 @@ const itemTypeLabels = {
                                 </div>
                             </div>
 
-                            <!-- Children -->
+                            <!-- Children Level 2 (Mega Menu columns) -->
                             <div v-if="item.children_list && item.children_list.length > 0 && expandedItems[item.id]" class="pl-8 border-t border-gray-100 bg-white">
-                                <div v-for="child in item.children_list" :key="child.id" class="flex items-center gap-3 px-4 py-2.5 border-b border-gray-50 last:border-none hover:bg-amber-50/30 transition-colors">
-                                    <GripVertical class="w-4 h-4 text-gray-200 cursor-grab flex-shrink-0" />
-                                    <div class="w-4 h-4 border-l-2 border-b-2 border-gray-200 rounded-bl-md flex-shrink-0 -mt-3"></div>
-                                    <div class="flex-1 min-w-0">
-                                        <span class="font-semibold text-sm text-gray-800">{{ child.title }}</span>
-                                        <div class="flex items-center gap-2 mt-0.5">
-                                            <span class="text-[10px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{{ itemTypeLabels[child.item_type] || child.item_type }}</span>
-                                            <span v-if="child.url" class="text-[10px] text-gray-400 truncate max-w-[150px]">{{ child.url }}</span>
+                                <div v-for="child in item.children_list" :key="child.id" class="border-b border-gray-50 last:border-none hover:bg-amber-50/20 transition-colors">
+                                    <div class="flex items-center gap-3 px-4 py-2.5">
+                                        <GripVertical class="w-4 h-4 text-gray-200 cursor-grab flex-shrink-0" />
+                                        <div class="w-4 h-4 border-l-2 border-b-2 border-gray-200 rounded-bl-md flex-shrink-0 -mt-3"></div>
+                                        
+                                        <button v-if="child.children_list && child.children_list.length > 0" @click="toggleExpand(child.id)" class="text-gray-400 hover:text-gray-700">
+                                            <ChevronDown v-if="expandedItems[child.id]" class="w-3.5 h-3.5" />
+                                            <ChevronRight v-else class="w-3.5 h-3.5" />
+                                        </button>
+                                        <div v-else class="w-3.5"></div>
+
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[9px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">CẤP 2</span>
+                                                <span class="font-semibold text-sm text-gray-800">{{ child.title }}</span>
+                                            </div>
+                                            <div class="flex items-center gap-2 mt-0.5">
+                                                <span class="text-[10px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{{ itemTypeLabels[child.item_type] || child.item_type }}</span>
+                                                <span v-if="child.url" class="text-[10px] text-gray-400 truncate max-w-[150px]">{{ child.url }}</span>
+                                                <span v-if="child.children_list && child.children_list.length > 0" class="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-semibold">{{ child.children_list.length }} links</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center gap-1 flex-shrink-0">
+                                            <button @click="openAddModal(child.id)" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" title="Thêm mục cấp 3">
+                                                <Plus class="w-3.5 h-3.5" />
+                                            </button>
+                                            <button @click="openEditModal(child)" class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors">
+                                                <Pencil class="w-3.5 h-3.5" />
+                                            </button>
+                                            <button @click="deleteItem(child)" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                                                <Trash2 class="w-3.5 h-3.5" />
+                                            </button>
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-1 flex-shrink-0">
-                                        <button @click="openEditModal(child)" class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors">
-                                            <Pencil class="w-3.5 h-3.5" />
-                                        </button>
-                                        <button @click="deleteItem(child)" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
-                                            <Trash2 class="w-3.5 h-3.5" />
-                                        </button>
+
+                                    <!-- Children Level 3 (Links in mega menu) -->
+                                    <div v-if="child.children_list && child.children_list.length > 0 && expandedItems[child.id]" class="pl-12 bg-gray-50/30">
+                                        <div v-for="grandchild in child.children_list" :key="grandchild.id" class="flex items-center gap-3 px-4 py-2 border-b border-gray-50 last:border-none hover:bg-amber-50/50 transition-colors">
+                                            <GripVertical class="w-3.5 h-3.5 text-gray-200 cursor-grab flex-shrink-0" />
+                                            <div class="w-4 h-4 border-l-2 border-b-2 border-amber-200 rounded-bl-md flex-shrink-0 -mt-3"></div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">CẤP 3</span>
+                                                    <span class="font-medium text-[13px] text-gray-700">{{ grandchild.title }}</span>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-[9px] font-mono text-gray-400">{{ grandchild.url }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-1 flex-shrink-0">
+                                                <button @click="openEditModal(grandchild)" class="p-1 text-gray-400 hover:text-amber-600 transition-colors">
+                                                    <Pencil class="w-3 h-3" />
+                                                </button>
+                                                <button @click="deleteItem(grandchild)" class="p-1 text-gray-400 hover:text-red-600 transition-colors">
+                                                    <Trash2 class="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
